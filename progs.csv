@@ -3,7 +3,7 @@
 ,hyprland,"is the desktop environment."
 ,uswm,"is the session manager."
 ,greetd,"is the login manager (only used for safe auto-login from TTY)."
-,hyprlock,"is a screen lock that is also used as to login."
+,hyprlock,"is a screen lock that is also used to login."
 ,fprintd,"enables authentication with a fingerprint reader."
 ,hyprpolkitagent,"is required for GUI applications to be able to request elevated permissions."
 ,alacritty,"is the default terminal emulator."
