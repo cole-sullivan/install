@@ -1,7 +1,7 @@
 #TAG,NAME IN REPO (or git url),PURPOSE (should be a verb phrase to sound right while installing)
 ,wayland,"is the window manager and compositor."
 ,hyprland,"is the desktop environment."
-,uswm,"is the session manager."
+,uwsm,"is the session manager."
 ,greetd,"is the login manager (only used for safe auto-login from TTY)."
 ,hyprlock,"is a screen lock that is also used to login."
 ,fprintd,"enables authentication with a fingerprint reader."
