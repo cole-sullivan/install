@@ -310,10 +310,10 @@ echo "kernel.dmesg_restrict = 0" > /etc/sysctl.d/dmesg.conf
 # If user has a fingerprint reader, install fprintd and enroll fingerprint
 if whiptail --title "Fingerprint" --yesno "Do you have a fingerprint reader?" 10 60; then
 	installpkg fprintd
- 	enrollfingerprint
-  	rm -f /etc/pam.d/system-local-login /etc/pam.d/sudo
-   	mv /home/$USERNAME/tmp/system-local-login /etc/pam.d/system-local-login
-    	mv /home/$USERNAME/tmp/sudo /etc/pam.d/sudo
+	enrollfingerprint
+	rm -f /etc/pam.d/system-local-login /etc/pam.d/sudo
+	mv /home/$USERNAME/tmp/system-local-login /etc/pam.d/system-local-login
+	mv /home/$USERNAME/tmp/sudo /etc/pam.d/sudo
 fi
 
 # Cleanup
