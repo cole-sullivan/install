@@ -175,6 +175,37 @@ putgitrepo() {
 	sudo -u "$USERNAME" cp -rfT "$DIR" "$2"
 }
 
+enrollfingerprint() {
+	TEMPOUTPUT=$(mktemp)
+ 	PROGRESSFILE=$(mktemp)
+  	MAXATTEMPTS=9
+   	echo 0 > "$PROGRESSFILE"
+    	(
+		fprintd-enroll "$USERNAME" | tee "$TEMPOUTPUT" |
+       		while IFS= read -r LINE; do
+	 		if [[ "$LINE" == *"Enroll result: enroll-stage-passed"* ]]; then
+    				CURRENT=$(cat "$PROGRESSFILE")
+				NEWPROGRESS=$((CURRENT + 100/MAXATTEMPTS))
+    				echo "$NEWPROGRESS" > "$PROGRESSFILE"
+				echo "$NEWPROGRESS"
+    			elif [[ "$LINE" == *"Enroll result: enroll-completed"* ]]; then
+       				echo "100"
+	   		fi
+      		done
+	) | whiptail --gauge "Enrolling fingerprint. Repeatedly scan your right index finger until the bar reaches 100%." 10 70 0
+
+ 	if grep -q "Enroll result: enroll-completed" "$TEMPOUTPUT"; then
+  		whiptail --title "Enrollment complete!" --msgbox "Successfully enrolled fingerprint!" 10 60
+    	else
+     		ERRORMSG=$(grep "ERROR" "$TEMPOUTPUT" | head -1)
+       		if [ -z "$ERRORMSG" ]; then
+	 		ERRORMSG="Enrollment did not complete successfully."
+    		fi
+      		whiptail --title "Enrollment failed..." --msgbox "Failed to enroll fingerprint:\\n\\n$ERRORMSG" 10 60
+	fi
+	rm -f $TEMPOUTPUT $PROGRESSFILE
+}
+
 finalize() {
 	whiptail --title "All done!" \
 		--msgbox "Provided there were no hidden errors, the script completed successfully and all the programs and configuration files should be in place.\\n\\nSelect <OK> to reboot the machine.\\n\\n" 13 80
@@ -252,7 +283,6 @@ rm -rf "/home/$USERNAME/.git/" "/home/$USERNAME/README.md"
 rm -f /etc/greetd/config.toml
 echo "user = \"$USERNAME\"" >> /home/$USERNAME/tmp/config.toml
 mv /home/$USERNAME/tmp/config.toml /etc/greetd/config.toml
-rmdir /home/$USERNAME/tmp
 systemctl enable greetd.service
 
 # Most important command! Get rid of the beep!
@@ -266,6 +296,9 @@ sudo -u "$USERNAME" mkdir -p "/home/$USERNAME/.cache/zsh/"
 # dbus UUID must be generated for Arch runit.
 dbus-uuidgen >/var/lib/dbus/machine-id
 
+# Enable PipeWire and WirePlumber
+systemctl enable --user --now pipewire wireplumber pipewire-pulse
+
 # Allow wheel users to sudo with password and allow several system commands
 # (like `shutdown` to run without password).
 echo "%wheel ALL=(ALL:ALL) ALL" >/etc/sudoers.d/00-wheel-can-sudo
@@ -274,11 +307,18 @@ echo "Defaults editor=/usr/bin/nvim" >/etc/sudoers.d/02-visudo-editor
 mkdir -p /etc/sysctl.d
 echo "kernel.dmesg_restrict = 0" > /etc/sysctl.d/dmesg.conf
 
-# Enable PipeWire and WirePlumber
-systemctl enable --user --now pipewire wireplumber pipewire-pulse
+# If user has a fingerprint reader, install fprintd and enroll fingerprint
+if whiptail --title "Fingerprint" --yesno "Do you have a fingerprint reader?" 10 60; then
+	installpkg fprintd
+ 	enrollfingerprint
+  	rm -f /etc/pam.d/system-local-login /etc/pam.d/sudo
+   	mv /home/$USERNAME/tmp/system-local-login /etc/pam.d/system-local-login
+    	mv /home/$USERNAME/tmp/sudo /etc/pam.d/sudo
+fi
 
 # Cleanup
 rm -f /etc/sudoers.d/install-aur-temp
+rm -rf /home/$USERNAME/tmp
 
 # Last message! Install complete!
 finalize
