@@ -274,6 +274,9 @@ echo "Defaults editor=/usr/bin/nvim" >/etc/sudoers.d/02-visudo-editor
 mkdir -p /etc/sysctl.d
 echo "kernel.dmesg_restrict = 0" > /etc/sysctl.d/dmesg.conf
 
+# Enable PipeWire and WirePlumber
+systemctl enable --user --now pipewire wireplumber pipewire-pulse
+
 # Cleanup
 rm -f /etc/sudoers.d/install-aur-temp
 
