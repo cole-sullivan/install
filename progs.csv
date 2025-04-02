@@ -9,3 +9,7 @@
 ,alacritty,"is the default terminal emulator."
 A,librewolf-bin,"is the default browser."
 ,gnu-free-fonts,"provides a variety of widely used fonts."
+,pipewire,"is the audio router and processor."
+,pipewire-pulse,"replaces PulseAudio."
+,pipewire-alsa,"enables ALSA configuration."
+,wireplumber,"is the session manager for PipeWire."
